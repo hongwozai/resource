@@ -44,6 +44,12 @@ public:
 
     T*    popBack() { T* ret = containerOf(tail); detach(tail); return ret; }
 
+    T*    first() { return containerOf(head); }
+
+    T*    end() { return containerOf(tail); }
+
+    bool  empty() { return (head == 0); }
+
 public:
 
     Link *head;
