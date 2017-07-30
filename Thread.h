@@ -25,6 +25,7 @@ public:
     int err;
 };
 
+/********************************************************************/
 class Thread
 {
 public:
@@ -119,6 +120,7 @@ inline void Thread::cancel()
         throw ThreadError(retval);
 }
 
+/********************************************************************/
 class Mutex
 {
 public:
@@ -150,6 +152,8 @@ public:
 private:
 
     pthread_mutex_t mutex;
+
+    friend class Cond;
 };
 
 inline Mutex::Mutex(bool isrecur)
@@ -173,6 +177,54 @@ inline void Mutex::acquire()
 inline void Mutex::release()
 {
     pthread_mutex_unlock(&mutex);
+}
+
+/********************************************************************/
+class Cond
+{
+public:
+
+    inline Cond(Mutex &mutex);
+
+    inline ~Cond();
+
+    inline void wait();
+
+    inline void notifyAll();
+
+    inline void notify();
+
+private:
+
+    pthread_cond_t cond;
+
+    Mutex &mutex;
+};
+
+inline Cond::Cond(Mutex &mutex)
+    : mutex(mutex)
+{
+    pthread_cond_init(&cond, 0);
+}
+
+inline Cond::~Cond()
+{
+    pthread_cond_destroy(&cond);
+}
+
+inline void Cond::wait()
+{
+    pthread_cond_wait(&cond, &mutex.mutex);
+}
+
+inline void Cond::notify()
+{
+    pthread_cond_signal(&cond);
+}
+
+inline void Cond::notifyAll()
+{
+    pthread_cond_broadcast(&cond);
 }
 
 #endif /* THREAD_H */
