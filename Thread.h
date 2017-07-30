@@ -43,6 +43,8 @@ public:
 
     bool joinable()   { return isJoinable; }
 
+    inline void set(void *(*run)(void *), void *arg = NULL);
+
     inline void start();
 
     inline void *join();
@@ -79,6 +81,13 @@ private:
     void *arg;
 
 };
+
+inline void Thread::set(void *(*run)(void *), void *arg)
+{
+    this->func = run;
+    this->arg  = arg;
+}
+
 
 inline void Thread::start()
 {
