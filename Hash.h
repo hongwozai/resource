@@ -13,6 +13,7 @@
 #define HASH_H
 
 #include <cstddef>
+#include "FreeList.h"
 
 template <class Key>
 class HashDefaultFunc
@@ -49,8 +50,8 @@ class Hash
 {
 public:
 
-    Hash(size_t mod = 10) :
-        freelist(0), buckets(0), mask((1 << mod) - 1) { create(); }
+    Hash(size_t mod = 10, unsigned freemod = 1) :
+        freelist(freemod), buckets(0), mask((1 << mod) - 1) { create(); }
 
     ~Hash() { destroy(); }
 
@@ -85,12 +86,12 @@ private:
 
 private:
 
-    inline Node *findInternal(Key &key);
+    inline Node *findInternal(const Key &key);
 
 private:
 
     /*!< 缓存链 */
-    Node *freelist;
+    FreeList<Node> freelist;
 
     /*!< hash桶数组 */
     Bucket *buckets;
@@ -120,14 +121,14 @@ void Hash<Key, Value, Func>::destroy()
             node->next->pprev = node->pprev;
         if (node->pprev)
             *node->pprev = node->next;
-        delete node;
+        freelist.detach(node);
     }
     delete[] buckets;
 }
 
 template <class Key, class Value, class Func>
 inline typename Hash<Key, Value, Func>::Node*
-Hash<Key, Value, Func>::findInternal(Key &key)
+Hash<Key, Value, Func>::findInternal(const Key &key)
 {
     Node  *temp;
     size_t index = func(key) & mask;
@@ -154,16 +155,9 @@ void Hash<Key, Value, Func>::insert(const Key &key, const Value &value)
     size_t index = func(key) & mask;
 
     // 申请
-    if (!freelist) {
-        node = new Node();
-        node->key   = key;
-        node->value = value;
-    } else {
-        node = freelist;
-        freelist = freelist->next;
-        node->key   = key;
-        node->value = value;
-    }
+    node = freelist.attach();
+    node->key   = key;
+    node->value = value;
 
     // 头插
     node->next  = buckets[index].head;
@@ -186,8 +180,8 @@ bool Hash<Key, Value, Func>::del(const Key &key)
         *node->pprev = node->next;
 
     // 放回链上
-    node->next = freelist;
-    freelist   = node;
+    freelist.detach(node);
+    return true;
 }
 
 template <class Key, class Value, class Func>
@@ -203,14 +197,8 @@ Value& Hash<Key, Value, Func>::operator [] (const Key &key)
     }
 
     // 申请
-    if (!freelist) {
-        node = new Node();
-        node->key   = key;
-    } else {
-        node = freelist;
-        freelist  = freelist->next;
-        node->key = key;
-    }
+    node = freelist.attach();
+    node->key = key;
 
     // 头插
     node->next  = buckets[index].head;
