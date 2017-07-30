@@ -26,7 +26,7 @@ public:
 
 public:
 
-    EmbedList() : head(0), tail(0), len(0), offset(0) {}
+    EmbedList(int offset = 0) : head(0), tail(0), len(0), offset(offset) {}
 
     inline void  attach(Link *node, T *data);
 
@@ -44,9 +44,9 @@ public:
 
     T*    popBack() { T* ret = containerOf(tail); detach(tail); return ret; }
 
-    T*    first() { return containerOf(head); }
+    T*    first() { return head ? containerOf(head) : 0; }
 
-    T*    end() { return containerOf(tail); }
+    T*    end() { return tail ? containerOf(tail) : 0; }
 
     bool  empty() { return (head == 0); }
 
