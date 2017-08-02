@@ -9,24 +9,24 @@
  ** 描  述：嵌入形式的链表，类似于内核链表
  ** 注  意：1.
  ********************************************************************/
-#ifndef EMBEDLIST_H
-#define EMBEDLIST_H
+#ifndef ELIST_H
+#define ELIST_H
 
-typedef struct EmbedListLink {
-    EmbedListLink *prev;
-    EmbedListLink *next;
-} EmbedListLink;
+typedef struct EListLink {
+    EListLink *prev;
+    EListLink *next;
+} EListLink;
 
 template <class T>
-class EmbedList
+class EList
 {
 public:
 
-    typedef EmbedListLink Link;
+    typedef EListLink Link;
 
 public:
 
-    EmbedList(int offset = 0) : head(0), tail(0), len(0), offset(offset) {}
+    EList(int offset = 0) : head(0), tail(0), len(0), offset(offset) {}
 
     inline void  attach(Link *node, T *data);
 
@@ -62,7 +62,7 @@ public:
 };
 
 template <class T>
-inline void EmbedList<T>::attach(Link *node, T* data)
+inline void EList<T>::attach(Link *node, T* data)
 {
     Link *temp = (Link*)((char*)data + offset);
 
@@ -76,7 +76,7 @@ inline void EmbedList<T>::attach(Link *node, T* data)
 }
 
 template <class T>
-inline void EmbedList<T>::detach(Link *node)
+inline void EList<T>::detach(Link *node)
 {
     if (node->prev == 0) head = node->next;
     else                 node->prev->next = node->next;
@@ -85,4 +85,4 @@ inline void EmbedList<T>::detach(Link *node)
     len--;
 }
 
-#endif /* EMBEDLIST_H */
+#endif /* ELIST_H */

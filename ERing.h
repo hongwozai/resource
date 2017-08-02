@@ -9,25 +9,25 @@
  ** 描  述：环的实现（循环双链表）
  ** 注  意：
  ********************************************************************/
-#ifndef EMBEDRING_H
-#define EMBEDRING_H
+#ifndef ERING_H
+#define ERING_H
 
 // 链接器
-struct EmbedRingLink {
-    EmbedRingLink *prev;
-    EmbedRingLink *next;
+struct ERingLink {
+    ERingLink *prev;
+    ERingLink *next;
 };
 
 template <class T>
-class EmbedRing
+class ERing
 {
 public:
 
-    typedef EmbedRingLink Link;
+    typedef ERingLink Link;
 
 public:
 
-    EmbedRing(int offset = 0) : head(0), len(0), offset(offset) {}
+    ERing(int offset = 0) : head(0), len(0), offset(offset) {}
 
     inline void attach(Link *item, T *data);
 
@@ -63,7 +63,7 @@ public:
 };
 
 template <class T>
-inline void EmbedRing<T>::attach(Link *item, T *data)
+inline void ERing<T>::attach(Link *item, T *data)
 {
     Link *temp = (Link*)((char*)data + offset);
 
@@ -83,7 +83,7 @@ inline void EmbedRing<T>::attach(Link *item, T *data)
 }
 
 template <class T>
-inline void EmbedRing<T>::detach(Link *item)
+inline void ERing<T>::detach(Link *item)
 {
     if (item->prev == item) head = 0;
     else                    item->prev->next = item->next;
@@ -92,4 +92,4 @@ inline void EmbedRing<T>::detach(Link *item)
     len--;
 }
 
-#endif /* EMBEDRING_H */
+#endif /* ERING_H */
