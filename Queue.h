@@ -14,8 +14,9 @@
 
 #include "Thread.h"
 #include "FreeList.h"
+#include "Allocator.h"
 
-template <class Type>
+template <class Type, class Allocator = Allocator<Type> >
 class Queue
 {
 public:
@@ -46,6 +47,8 @@ private:
         Type  type;
     };
 
+    typedef typename Allocator::template rebind<Node>::other NodeAlloc;
+
 private:
 
     void create();
@@ -66,7 +69,7 @@ private:
     Node *head, *tail;
 
     /*!< 缓存链 */
-    FreeList<Node> freelist;
+    FreeList<Node, NodeAlloc> freelist;
 
     // 队列长度
     int    len;
@@ -75,16 +78,16 @@ private:
     bool   isdestroy;
 };
 
-template <class Type>
-void Queue<Type>::notifyDestroy()
+template <class Type, class Allocator>
+void Queue<Type, Allocator>::notifyDestroy()
 {
     Mutex::Auto _l(mutex);
     isdestroy = true;
     cond.notifyAll();
 }
 
-template <class Type>
-void Queue<Type>::destroy()
+template <class Type, class Allocator>
+void Queue<Type, Allocator>::destroy()
 {
     while (head) {
         Node *temp = head;
@@ -93,8 +96,8 @@ void Queue<Type>::destroy()
     }
 }
 
-template <class Type>
-void Queue<Type>::enq(const Type &value)
+template <class Type, class Allocator>
+void Queue<Type, Allocator>::enq(const Type &value)
 {
     Node *node;
     Mutex::Auto _l(mutex);
@@ -116,8 +119,8 @@ void Queue<Type>::enq(const Type &value)
     cond.notify();
 }
 
-template <class Type>
-void Queue<Type>::deq(Type &value)
+template <class Type, class Allocator>
+void Queue<Type, Allocator>::deq(Type &value)
 {
     Node *node;
     Mutex::Auto _l(mutex);

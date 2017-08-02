@@ -13,8 +13,9 @@
 #define FREELIST_H
 
 #include <cstddef>
+#include "Allocator.h"
 
-template <class Item>
+template <class Item, class Allocator = Allocator<Item> >
 class FreeList
 {
 public:
@@ -55,14 +56,17 @@ private:
 
     /*!< 滴答数 */
     size_t tick;
+
+    /*!< 分配器 */
+    Allocator ItemAlloc;
 };
 
-template <class Item>
-inline Item* FreeList<Item>::attach()
+template <class Item, class Allocator>
+inline Item* FreeList<Item, Allocator>::attach()
 {
     char *item;
     if (!head) {
-        item = new char[unit];
+        item = (char*)ItemAlloc.allocate(unit);
     } else {
         item = (char*)head;
         head = head->next;
@@ -70,14 +74,14 @@ inline Item* FreeList<Item>::attach()
     return (Item*)item;
 }
 
-template <class Item>
-inline void  FreeList<Item>::detach(Item *item)
+template <class Item, class Allocator>
+inline void  FreeList<Item, Allocator>::detach(Item *item)
 {
     if (!item)
         return;
 
     if (tick++ & mask) {
-        delete[] item;
+        ItemAlloc.deallocate((Item*)item, unit);
     } else {
         Node *node = (Node*)item;
         node->next = head;
@@ -86,13 +90,13 @@ inline void  FreeList<Item>::detach(Item *item)
     return;
 }
 
-template <class Item>
-inline void FreeList<Item>::destroyAll()
+template <class Item, class Allocator>
+inline void FreeList<Item, Allocator>::destroyAll()
 {
     while (head) {
         Node *temp = head;
         head = head->next;
-        delete[] temp;
+        ItemAlloc.deallocate((Item*)temp, unit);
     }
 }
 
