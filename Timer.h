@@ -34,7 +34,7 @@ public:
     void end();
 
     // 直接打印结果在屏幕上
-    void report();
+    void report(const char *re = "");
 
     // 返回微秒级别，是平局时间
     uint64_t getTime() { return averageTime; }

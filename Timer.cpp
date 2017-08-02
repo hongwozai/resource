@@ -39,9 +39,10 @@ void Timer::end()
     count++;
 }
 
-void Timer::report()
+void Timer::report(const char *re)
 {
-    printf("Timer: average: %lu us, max %lu us, count: %lu\n",
+    printf("Timer(%s): average: %lu us, max %lu us, count: %lu\n",
+           re ? re : "",
            averageTime,
            maxTime,
            count);
